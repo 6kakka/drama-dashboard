@@ -50,6 +50,9 @@ td{padding:8px 10px;border-bottom:1px solid #f0f3f9;color:#33405e}
 tr:hover td{background:#f6f8ff}
 .tblbox{max-height:430px;overflow:auto;border-radius:10px;border:1px solid var(--line)}
 .calc-box{margin-top:12px;padding:12px 16px;background:#f6f8fc;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.9}
+.tblbox td.nw{white-space:nowrap}
+.chg,.gd,.tag,.node{white-space:nowrap}
+td.ipcell{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#7a86a3}
 .calc-box ul{margin:6px 0 0;padding-left:20px}
 .calc-box li{margin:4px 0}
 .gd{display:inline-block;min-width:26px;text-align:center;padding:1px 8px;border-radius:6px;font-weight:700;font-size:12px}
@@ -190,7 +193,7 @@ details .inner{padding:12px 14px}
   <div class="page-desc">全部 <b id="libCount"></b> 部剧（以最新数据文档为准）。评级“/”或空 = 未评级，不计入已评级统计。点击有逐集数据的行可跳转到单剧留存分析。</div>
   <div class="card">
     <div class="selrow">
-      <input type="text" id="libSearch" placeholder="搜索内部别名 / 英文剧名…">
+      <input type="text" id="libSearch" placeholder="搜索内部别名 / 英文剧名 / 小说IP…">
       <span class="note">规模/金额类指标已脱敏，仅以评级档位体现相对体量</span>
     </div>
     <div class="tblbox" style="max-height:none"><table id="libTbl"></table></div>
@@ -561,17 +564,18 @@ function renderEp(){
 /* ============ 剧集库 ============ */
 (function(){
   function render(kw){
-    const rows=D.lib.filter(x=>!kw||x.alias.includes(kw)||x.name.toLowerCase().includes(kw.toLowerCase()));
-    $("#libTbl").innerHTML=`<thead><tr><th>内部别名</th><th>英文剧名</th><th>上线日期</th><th>集数</th><th>时长</th><th>付费卡点</th><th>7日评级</th><th>30日评级</th><th>变化</th><th>规模档位</th><th>备注</th></tr></thead><tbody>`+
+    const rows=D.lib.filter(x=>!kw||x.alias.includes(kw)||x.name.toLowerCase().includes(kw.toLowerCase())||(x.ip||"").includes(kw));
+    $("#libTbl").innerHTML=`<thead><tr><th>内部别名</th><th>英文剧名</th><th>小说 IP</th><th>上线日期</th><th>集数</th><th>时长</th><th>付费卡点</th><th>7日评级</th><th>30日评级</th><th>变化</th><th>规模档位</th><th>备注</th></tr></thead><tbody>`+
       rows.map(x=>{
         const inRet=!!D.ret[x.alias];
         const chg=x.g7&&x.g30?(x.g7===x.g30?`<span class="chg flat">维持</span>`:(("SABC".indexOf(x.g30)<"SABC".indexOf(x.g7))?`<span class="chg down">↓ 下调</span>`:`<span class="chg up">↑ 上调</span>`)):"";
         const tier=x.g7?`<span class="gd ${x.g7}">${x.g7} 档</span>`:`<span class="gd N">未评级</span>`;
+        const ipT=esc(x.ip)||"—";
         return `<tr ${inRet?`data-drama="${x.alias}" style="cursor:pointer"`:""}>
-        <td><b>${esc(x.alias)}</b></td><td style="font-size:12px">${esc(x.name)}</td><td>${x.launch||"—"}</td><td>${esc(x.eps)||"—"}</td><td>${x.dur?esc(x.dur)+"分":"—"}</td>
-        <td style="white-space:pre-line;font-size:12px">${esc(x.paywall)||"—"}</td>
-        <td>${x.g7?`<span class="gd ${x.g7}">${x.g7}</span>`:`<span class="gd N">/</span>`}</td>
-        <td>${x.g30?`<span class="gd ${x.g30}">${x.g30}</span>`:"—"}</td><td>${chg}</td><td>${tier}</td><td style="font-size:11px;color:var(--sub)">${esc(x.note)}</td></tr>`;
+        <td class="nw"><b>${esc(x.alias)}</b></td><td style="font-size:12px;min-width:120px">${esc(x.name)}</td><td class="ipcell" title="${ipT}">${ipT}</td><td class="nw">${x.launch||"—"}</td><td class="nw">${esc(x.eps)||"—"}</td><td class="nw">${x.dur?esc(x.dur)+"分":"—"}</td>
+        <td style="white-space:pre-line;font-size:12px;min-width:96px">${esc(x.paywall)||"—"}</td>
+        <td class="nw">${x.g7?`<span class="gd ${x.g7}">${x.g7}</span>`:`<span class="gd N">/</span>`}</td>
+        <td class="nw">${x.g30?`<span class="gd ${x.g30}">${x.g30}</span>`:"—"}</td><td class="nw">${chg}</td><td class="nw">${tier}</td><td style="font-size:11px;color:var(--sub)">${esc(x.note)}</td></tr>`;
       }).join("")+`</tbody>`;
   }
   render("");
