@@ -284,6 +284,7 @@ const gdCls=g=>`gd ${g||"N"}`;
 $("#sideNote").innerHTML=`数据版本：${D.meta.version}<br>基准日 ${D.meta.now}<br><br>原始数据零改动嵌入本页，仅播放/金额类数值脱敏呈现。`;
 $("#mrange").textContent=`${D.meta.dataFrom} ~ ${D.meta.dataTo}`;
 $("#foot").innerHTML=`海外短剧项目数据看板 · 版本 ${D.meta.version} · 基准日 ${D.meta.now}<br>原始数据内容零改动嵌入，仅播放/金额类数值做脱敏呈现（模糊化 / 相对指数 / 档位）。后续新数据将同步更新至本网址。`;
+window.addEventListener("resize",()=>Object.values(charts).forEach(c=>{try{c.resize()}catch(_){}}));
 $("#libCount").textContent=D.meta.total;
 
 function blurNums(t){
@@ -311,6 +312,7 @@ function jumpToDrama(alias){
   $$("section.tab").forEach(s=>s.classList.remove("on"));
   $("#t-ret").classList.add("on");
   $("#dramaSel").value=alias; renderEp();
+  requestAnimationFrame(()=>{setTimeout(()=>{if(epChart)epChart.resize();},60);});
   window.scrollTo({top:0,behavior:"smooth"});
 }
 const daysBetween=(a,b)=>Math.round((new Date(b)-new Date(a))/86400000);
