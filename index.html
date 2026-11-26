@@ -137,7 +137,7 @@ details .inner{padding:12px 14px}
   <div class="card"><h3>评级标准 · 核心维度（11 月版）</h3>
     <div class="desc">原文原则：“优先看消耗定体量，其次看回收定质量”，目前仅参考总消耗 + 累计 ROI。下表为 S/A/B/C 四档在两个观察期的核心门槛（数值为标准阈值原文，非剧目数据）。</div>
     <div id="stdCore"></div>
-    <details><summary>展开：其他维度原文（ROI 0/3/7、CPI、平均播放时长、播放量）与内容定级硬门槛（S+/S/A/B/C）</summary>
+    <details><summary>展开：其他维度原文（ROI 0/3/7、CPI、平均播放时长、播放量）</summary>
       <div class="inner" id="stdMore"></div>
     </details>
   </div>
@@ -168,9 +168,9 @@ details .inner{padding:12px 14px}
     <div class="calc-box">
       <b>三个率的计算方式（源数据口径）</b>
       <ul>
-        <li><b style="color:#22b8d4">留存率%</b> = 继续观看下一集的用户 ÷ 观看本集的用户 × 100% —— 衡量本集结尾能否把观众带到下一集，是逐集承接力的核心指标。</li>
+        <li><b style="color:#22b8d4">留存率%</b> = 本集观看人数 ÷ 本剧观看人数 × 100% —— 衡量本集覆盖的观众规模占全剧的比重，随集数自然衰减；衰减越快说明剧情承接越弱。</li>
+        <li><b style="color:#e5484d">跳出率%</b> = （上一集观看人数 − 本集观看人数）÷ 上一集观看人数 × 100% —— 衡量从上一集到本集流失掉的观众比例；跳出率峰值所在集即本剧最大流失节点。</li>
         <li><b style="color:#18a55f">完播率%</b> = 完播用户数 ÷ 观看人数 × 100% —— 衡量进入本集的用户中真正看完本集的比例，反映单集内容的完整吸引力。</li>
-        <li><b style="color:#e5484d">跳出率%</b> = 在本集放弃追剧的用户 ÷ 观看本集的用户 × 100% —— 留存率的镜像指标（留存率 + 跳出率 ≈ 100%），跳出率峰值所在集即流失节点。</li>
       </ul>
       <div style="margin-top:6px;color:var(--sub)">⚠ 因脱敏要求，看板不展示三个率的具体数值，而是换算为「相对指数」呈现：留存指数 = 本集留存率 ÷ 首集留存率 × 100（首集=100）；跳出强度 = 本集跳出率 ÷ 本剧最大跳出率 × 100（峰值=100）；完播水平 = 本集完播率 ÷ 本剧最大完播率 × 100（峰值=100）。相对高低关系与原始数据完全一致。</div>
     </div>
@@ -190,11 +190,19 @@ details .inner{padding:12px 14px}
 <!-- 剧集库 -->
 <section class="tab" id="t-lib">
   <h2 class="page">剧集库</h2>
-  <div class="page-desc">全部 <b id="libCount"></b> 部剧（以最新数据文档为准）。评级“/”或空 = 未评级，不计入已评级统计。点击有逐集数据的行可跳转到单剧留存分析。</div>
+  <div class="page-desc">全部 <b id="libCount"></b> 部剧（以最新数据文档为准）· 当前筛选显示 <b id="libShown"></b> 部。评级“/”或空 = 未评级，不计入已评级统计。带 <span class="tag">→ 留存</span> 标记的剧可点击跳转到单剧留存分析。</div>
   <div class="card">
     <div class="selrow">
       <input type="text" id="libSearch" placeholder="搜索内部别名 / 英文剧名 / 小说IP…">
       <span class="note">规模/金额类指标已脱敏，仅以评级档位体现相对体量</span>
+    </div>
+    <div class="selrow" style="flex-wrap:wrap;gap:10px;margin-top:10px">
+      <select id="f_g7"><option value="">7日评级：全部</option><option value="S">S 级</option><option value="A">A 级</option><option value="B">B 级</option><option value="C">C 级</option><option value="none">未评级（/）</option></select>
+      <select id="f_g30"><option value="">30日评级：全部</option><option value="S">S 级</option><option value="A">A 级</option><option value="B">B 级</option><option value="C">C 级</option><option value="none">未出炉（/）</option></select>
+      <select id="f_chg"><option value="">等级变化：全部</option><option value="up">↑ 上调</option><option value="down">↓ 下调</option><option value="flat">维持原级</option></select>
+      <label style="font-size:13px;color:var(--sub)">上线 <input type="date" id="f_d1" style="border:1px solid var(--line);border-radius:8px;padding:5px 8px;color:var(--txt);background:#fff"> ~ <input type="date" id="f_d2" style="border:1px solid var(--line);border-radius:8px;padding:5px 8px;color:var(--txt);background:#fff"></label>
+      <label style="font-size:13px;color:var(--sub)"><input type="checkbox" id="f_ret"> 仅看有逐集留存的剧</label>
+      <button id="f_reset" style="border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 12px;color:var(--sub);cursor:pointer;font-size:13px">重置筛选</button>
     </div>
     <div class="tblbox" style="max-height:none"><table id="libTbl"></table></div>
   </div>
@@ -373,18 +381,19 @@ mk("c_chg",{tooltip:{trigger:"item",formatter:"{b}：{c} 部"},
     `<div class="blockquote">* 评级遵循：“优先看消耗定体量，其次看回收定质量”原则 · 目前仅参考总消耗 + 累计 ROI</div>`;
   /* 其他维度：折叠区 */
   function fullTable(a,b,title){
-    const hr=rows[2];let h=`<div class="subttl">${title}</div><div style="overflow:auto"><table><thead><tr>`;
+    const hr=rows[2];let h=`<div class="subttl">${title}</div><div style="overflow:auto"><table style="min-width:0"><thead><tr>`;
     for(let j=a;j<=b;j++){if(hr[j]!=null&&String(hr[j]).trim())h+=`<th>${esc(String(hr[j]).replace(/\n/g," "))}</th>`;}
     h+="</tr></thead><tbody>";
-    for(let i=3;i<=7;i++){const r=rows[i];if(!r||r[a]==null)continue;h+="<tr>";
-      for(let j=a;j<=b;j++){if(hr[j]==null)continue;h+=`<td>${esc(r[j]==null?"":String(r[j]).replace(/\n/g,"<br>"))}</td>`;}
+    for(let i=3;i<=6;i++){const r=rows[i];if(!r||r[a]==null)continue;h+="<tr>";
+      for(let j=a;j<=b;j++){if(hr[j]==null)continue;h+=`<td class="nw">${esc(r[j]==null?"":String(r[j]).replace(/\n/g,"<br>"))}</td>`;}
       h+="</tr>";}
     return h+"</tbody></table></div>";
   }
+  const note=(st(7,0)+" "+st(8,0)).replace(/\s*\n\s*/g," ").replace(/^\*/,"* ").trim();
   $("#stdMore").innerHTML=
     fullTable(0,8,"IAP 评级标准（上线 7 日）· 全维度原文")+
     fullTable(10,19,"IAP 评级标准（上线 30 日）· 全维度原文")+
-    fullTable(21,26,"内容定级硬门槛标准（决定 S+/S/A/B 等级）· 原文");
+    `<div class="blockquote" style="margin-top:10px">${esc(note)}</div>`;
   /* 桑基 */
   const nodes={},links=[];const cnt={};
   D.lib.filter(x=>x.g7&&x.g30).forEach(x=>{const k=x.g7+"→"+x.g30;cnt[k]=(cnt[k]||0)+1;});
@@ -563,23 +572,49 @@ function renderEp(){
 }
 /* ============ 剧集库 ============ */
 (function(){
-  function render(kw){
-    const rows=D.lib.filter(x=>!kw||x.alias.includes(kw)||x.name.toLowerCase().includes(kw.toLowerCase())||(x.ip||"").includes(kw));
+  const F={kw:"",g7:"",g30:"",chg:"",d1:"",d2:"",retOnly:false};
+  function render(){
+    let rows=D.lib.filter(x=>{
+      if(F.kw&&!(x.alias.includes(F.kw)||x.name.toLowerCase().includes(F.kw.toLowerCase())||(x.ip||"").includes(F.kw)))return false;
+      if(F.g7==="none"){if(x.g7)return false;} else if(F.g7&&x.g7!==F.g7)return false;
+      if(F.g30==="none"){if(x.g30)return false;} else if(F.g30&&x.g30!==F.g30)return false;
+      if(F.chg){
+        if(!x.g7||!x.g30)return false;
+        const dir=x.g7===x.g30?"flat":(("SABC".indexOf(x.g30)>"SABC".indexOf(x.g7))?"down":"up");
+        if(dir!==F.chg)return false;
+      }
+      if(F.d1&&x.launch&&x.launch<F.d1)return false;
+      if(F.d2&&x.launch&&x.launch>F.d2)return false;
+      if(F.retOnly&&!D.ret[x.alias])return false;
+      return true;
+    });
+    $("#libShown").textContent=rows.length;
     $("#libTbl").innerHTML=`<thead><tr><th>内部别名</th><th>英文剧名</th><th>小说 IP</th><th>上线日期</th><th>集数</th><th>时长</th><th>付费卡点</th><th>7日评级</th><th>30日评级</th><th>变化</th><th>规模档位</th><th>备注</th></tr></thead><tbody>`+
       rows.map(x=>{
         const inRet=!!D.ret[x.alias];
-        const chg=x.g7&&x.g30?(x.g7===x.g30?`<span class="chg flat">维持</span>`:(("SABC".indexOf(x.g30)<"SABC".indexOf(x.g7))?`<span class="chg down">↓ 下调</span>`:`<span class="chg up">↑ 上调</span>`)):"";
+        const chg=x.g7&&x.g30?(x.g7===x.g30?`<span class="chg flat">维持</span>`:(("SABC".indexOf(x.g30)>"SABC".indexOf(x.g7))?`<span class="chg down">↓ 下调</span>`:`<span class="chg up">↑ 上调</span>`)):"";
         const tier=x.g7?`<span class="gd ${x.g7}">${x.g7} 档</span>`:`<span class="gd N">未评级</span>`;
         const ipT=esc(x.ip)||"—";
         return `<tr ${inRet?`data-drama="${x.alias}" style="cursor:pointer"`:""}>
-        <td class="nw"><b>${esc(x.alias)}</b></td><td style="font-size:12px;min-width:120px">${esc(x.name)}</td><td class="ipcell" title="${ipT}">${ipT}</td><td class="nw">${x.launch||"—"}</td><td class="nw">${esc(x.eps)||"—"}</td><td class="nw">${x.dur?esc(x.dur)+"分":"—"}</td>
+        <td class="nw"><b>${esc(x.alias)}</b>${inRet?` <span class="tag">→ 留存</span>`:""}</td><td style="font-size:12px;min-width:120px">${esc(x.name)}</td><td class="ipcell" title="${ipT}">${ipT}</td><td class="nw">${x.launch||"—"}</td><td class="nw">${esc(x.eps)||"—"}</td><td class="nw">${x.dur?esc(x.dur)+"分":"—"}</td>
         <td style="white-space:pre-line;font-size:12px;min-width:96px">${esc(x.paywall)||"—"}</td>
         <td class="nw">${x.g7?`<span class="gd ${x.g7}">${x.g7}</span>`:`<span class="gd N">/</span>`}</td>
         <td class="nw">${x.g30?`<span class="gd ${x.g30}">${x.g30}</span>`:"—"}</td><td class="nw">${chg}</td><td class="nw">${tier}</td><td style="font-size:11px;color:var(--sub)">${esc(x.note)}</td></tr>`;
       }).join("")+`</tbody>`;
   }
-  render("");
-  $("#libSearch").addEventListener("input",e=>render(e.target.value.trim()));
+  render();
+  $("#libSearch").addEventListener("input",e=>{F.kw=e.target.value.trim();render();});
+  $("#f_g7").addEventListener("change",e=>{F.g7=e.target.value;render();});
+  $("#f_g30").addEventListener("change",e=>{F.g30=e.target.value;render();});
+  $("#f_chg").addEventListener("change",e=>{F.chg=e.target.value;render();});
+  $("#f_d1").addEventListener("change",e=>{F.d1=e.target.value;render();});
+  $("#f_d2").addEventListener("change",e=>{F.d2=e.target.value;render();});
+  $("#f_ret").addEventListener("change",e=>{F.retOnly=e.target.checked;render();});
+  $("#f_reset").addEventListener("click",()=>{
+    Object.assign(F,{kw:"",g7:"",g30:"",chg:"",d1:"",d2:"",retOnly:false});
+    $("#libSearch").value="";$("#f_g7").value="";$("#f_g30").value="";$("#f_chg").value="";
+    $("#f_d1").value="";$("#f_d2").value="";$("#f_ret").checked=false;render();
+  });
 })();
 
 /* ============ 重点关注 ============ */
