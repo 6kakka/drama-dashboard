@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>海外短剧项目数据看板</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%233b6ef5'/%3E%3Cstop offset='1' stop-color='%2322b8d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='15' fill='url(%23g)'/%3E%3Cpath d='M26 17 L47 29.5 L26 42 Z' fill='%23fff'/%3E%3Cline x1='14' y1='51' x2='50' y2='51' stroke='%23fff' stroke-width='3' opacity='.35' stroke-linecap='round'/%3E%3Cpath d='M14 51 H36' stroke='%23fff' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='45' cy='51' r='3.5' fill='%23ffd75e'/%3E%3C/svg%3E">
 <style>
 :root{
   --bg:#f4f6fb; --card:#ffffff; --line:#e5e9f2; --txt:#1f2a44; --sub:#6b7690;
@@ -14,8 +15,10 @@ body{background:var(--bg);color:var(--txt);font-family:"PingFang SC","Microsoft 
 /* ===== 左侧导航 ===== */
 .sidebar{position:fixed;left:0;top:0;bottom:0;width:216px;background:#fff;border-right:1px solid var(--line);
   display:flex;flex-direction:column;padding:22px 14px;z-index:50;overflow-y:auto}
-.logo{font-size:17px;font-weight:800;letter-spacing:.5px;padding:0 10px 4px;
+.logo{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;letter-spacing:.5px;padding:0 8px 4px;
   background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo svg{flex:0 0 auto}
+.logo span{white-space:nowrap}
 .logo-sub{color:var(--sub);font-size:11px;padding:0 10px 16px;border-bottom:1px solid var(--line);margin-bottom:12px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;cursor:pointer;color:var(--sub);
   font-size:14px;margin-bottom:4px;transition:.15s;user-select:none}
@@ -102,7 +105,7 @@ details .inner{padding:12px 14px}
 </head>
 <body>
 <nav class="sidebar">
-  <div class="logo">海外短剧数据看板</div>
+  <div class="logo"><svg width="30" height="30" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="logo"><defs><linearGradient id="lgLogo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b6ef5"/><stop offset="1" stop-color="#22b8d4"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#lgLogo)"/><path d="M26 17 L47 29.5 L26 42 Z" fill="#fff"/><line x1="14" y1="51" x2="50" y2="51" stroke="#fff" stroke-width="3" opacity=".35" stroke-linecap="round"/><path d="M14 51 H36" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="45" cy="51" r="3.5" fill="#ffd75e"/></svg><span>海外短剧数据看板</span></div>
   <div class="logo-sub">评级 · 流失节点 · 制作指导</div>
   <div class="nav-item on" data-t="ov">📊 总览</div>
   <div class="nav-item" data-t="rating">🏅 评级体系</div>
