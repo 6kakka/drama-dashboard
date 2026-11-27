@@ -214,7 +214,12 @@ details .inner{padding:12px 14px}
   <h2 class="page">重点关注</h2>
   <div class="page-desc">基于最新评级数据自动生成：当下最值得投入注意力的项目清单（数据基准日 <span id="watchNow"></span>）。每个板块仅展示最优先的 5 部，完整清单可在「剧集库」按对应条件筛选查看。</div>
   <div class="card"><h3>当下结论</h3><div class="insight" id="watchInsight"></div></div>
-  <div class="card" style="margin-top:14px"><h3>🆕 本周期新出评级（近 7 天，适合会议开场展示）</h3><div class="desc">评级数据统计区间以飞书表「数据截至日期」为准，悬停卡片可查看该评级对应的时间段</div><div id="wNew"></div></div>
+  <div class="card" style="margin-top:14px"><h3>🆕 本周期新出评级</h3>
+    <div class="grid g2" style="margin-top:8px">
+      <div><div class="subttl" style="margin-bottom:8px">7 日评级新出炉（<span id="n7cnt"></span> 部）</div><div id="wNew7"></div></div>
+      <div><div class="subttl" style="margin-bottom:8px">30 日评级新出炉（<span id="n30cnt"></span> 部）</div><div id="wNew30"></div></div>
+    </div>
+  </div>
   <div class="grid g2" style="margin-top:14px">
     <div><div class="subttl">🔴 降级警示（长线回收不及预期）</div><div id="wDown"></div></div>
     <div><div class="subttl">🟠 高评级观察池（S / A 级，跟踪 30 日走势）</div><div id="wHigh"></div></div>
@@ -669,39 +674,38 @@ function renderEp(){
     <b>5、${due.length} 部剧的 30 日评级窗口将在 45 天内结束</b>，评级结果即将明朗，是短期内调整预算分配的决策点。`;
 
   const card=(cls,title,body)=>`<div class="watch-card ${cls}"><div class="t">${title}</div><div class="d">${body}</div></div>`;
+  const withIp=x=>`${esc(x.name)}${x.ip?` · <span style="color:var(--sub)">${esc(x.ip)}</span>`:""}`;
   const more=(n,txt)=>n>TOP?`<div class="note" style="margin-top:6px">其余 ${n-TOP} 部从略 — 完整清单见「剧集库」筛选：${txt}</div>`:"";
-  // 新出评级合并展示（会议开场）
+  // 新出评级左右两列并排（会议开场）
   const newCard=(x,tag)=>card(tag==="7日"?"amber":"green",
     `${esc(x.alias)}　<span class="pill">新出${tag}评级</span> ${x.g7&&tag==="30日"?`<span class="gd ${x.g7}">7日 ${x.g7}</span> → `:""}<span class="gd ${tag==="7日"?x.g7:x.g30}">${tag==="7日"?x.g7:x.g30}</span>`,
-    `${esc(x.name)}<br>${tag==="7日"?"7日":"30日"}评级数据区间：${tag==="7日"?p7(x):p30(x)} · 上线 ${x.launch||"—"}${D.ret[x.alias]?` · <a href="javascript:void(0)" onclick="jumpToDrama('${x.alias}')" style="color:var(--accent)">查看逐集留存 →</a>`:""}`);
-  const n7Show=new7.slice(0,TOP), n30Show=new30.slice(0,TOP);
-  $("#wNew").innerHTML=
-    (n7Show.length?`<div class="subttl" style="margin-bottom:8px">7 日评级新出炉（${new7.length} 部）</div>`+n7Show.map(x=>newCard(x,"7日")).join("")+more(new7.length,"评级新鲜度 = 新出 7 日评级"):"")+
-    (n30Show.length?`<div class="subttl" style="margin:12px 0 8px">30 日评级新出炉（${new30.length} 部）</div>`+n30Show.map(x=>newCard(x,"30日")).join("")+more(new30.length,"评级新鲜度 = 新出 30 日评级"):"")+
-    (!new7.length&&!new30.length?"<div class='note'>本周期（近 7 天）暂无新出炉评级。</div>":"");
+    `${withIp(x)}<br>${tag==="7日"?"7日":"30日"}评级数据区间：${tag==="7日"?p7(x):p30(x)} · 上线 ${x.launch||"—"}${D.ret[x.alias]?` · <a href="javascript:void(0)" onclick="jumpToDrama('${x.alias}')" style="color:var(--accent)">查看逐集留存 →</a>`:""}`);
+  $("#n7cnt").textContent=new7.length; $("#n30cnt").textContent=new30.length;
+  $("#wNew7").innerHTML=new7.slice(0,TOP).map(x=>newCard(x,"7日")).join("")+more(new7.length,"评级新鲜度 = 新出 7 日评级")||"<div class='note'>本周期暂无新出 7 日评级。</div>";
+  $("#wNew30").innerHTML=new30.slice(0,TOP).map(x=>newCard(x,"30日")).join("")+more(new30.length,"评级新鲜度 = 新出 30 日评级")||"<div class='note'>本周期暂无新出 30 日评级。</div>";
 
   $("#wDown").innerHTML=D.trans.slice(0,TOP).map(t=>{
     const it=lib.find(x=>x.alias===t.alias)||{};
     return card("red",`${esc(t.alias)}　<span class="pill">7日</span><span class="${gdCls(t.from)}">${t.from}</span> → <span class="pill">30日</span><span class="${gdCls(t.to)}">${t.to}</span> <span class="chg down">↓</span>`,
-      `${esc(t.name)}<br>上线 ${it.launch||"—"} · 7日区间 ${p7(it)} · 30日区间 ${p30(it)}<br><span style="color:var(--red)">建议：对照单剧留存分析定位中后段流失，复核投放回收曲线。</span>`);
+      `${withIp(it)}<br>上线 ${it.launch||"—"} · 7日区间 ${p7(it)} · 30日区间 ${p30(it)}<br><span style="color:var(--red)">建议：对照单剧留存分析定位中后段流失，复核投放回收曲线。</span>`);
   }).join("")+more(D.trans.length,"等级变化 = ↓ 下调")||"无";
   $("#wHigh").innerHTML=high.slice(0,TOP).map(x=>{
     const inRet=D.ret[x.alias];
     return card("amber",`${esc(x.alias)}　<span class="pill">7日</span><span class="gd ${x.g7}">${x.g7}</span>${x.g30?` → <span class="pill">30日</span><span class="gd ${x.g30}">${x.g30}</span>`:" <span class='pill'>30日未出级</span>"}`,
-      `${esc(x.name)}<br>7日区间 ${p7(x)} · 30日区间 ${p30(x)}${inRet?` · <a href="javascript:void(0)" onclick="jumpToDrama('${x.alias}')" style="color:var(--accent)">查看逐集留存 →</a>`:""}`);
+      `${withIp(x)}<br>7日区间 ${p7(x)} · 30日区间 ${p30(x)}${inRet?` · <a href="javascript:void(0)" onclick="jumpToDrama('${x.alias}')" style="color:var(--accent)">查看逐集留存 →</a>`:""}`);
   }).join("")+more(high.length,"7日评级 = S 级 / A 级")||"无";
   const pendingUps=D.upcoming.map(x=>
     card("amber",`${esc(x.alias)}　<span class="gd N">待评级</span> <span class="tag" style="color:var(--gold)">🚀 即将上线</span>`,
-      `${esc(x.name)||esc(x.ip)||""}<br>上线 ${x.launch||"—"}（${daysBetween(x.launch,NOW)>=0?`已上线 ${daysBetween(x.launch,NOW)} 天，暂未进入评级`:`预计 ${x.launch} 上线`}<br><span style="color:var(--sub)">上线后自动进入 7 日观察窗口，评级出炉后可在剧集库查看时间段。</span>`));
+      `${withIp(x)}<br>上线 ${x.launch||"—"}（${daysBetween(x.launch,NOW)>=0?`已上线 ${daysBetween(x.launch,NOW)} 天，暂未进入评级`:`预计 ${x.launch} 上线`}<br><span style="color:var(--sub)">上线后自动进入 7 日观察窗口，评级出炉后可在剧集库查看时间段。</span>`));
   $("#wPending").innerHTML=recentPending.slice(0,TOP-pendingUps.length>0?TOP-pendingUps.length:0).map(x=>
     card("amber",`${esc(x.alias)}　<span class="gd N">未评级</span>`,
-      `${esc(x.name)}<br>上线 ${x.launch||"—"}（已上线 ${daysBetween(x.launch,NOW)} 天）<br><span style="color:var(--sub)">7 日观察窗口内，按“总消耗 + 累计 ROI”核心门槛判定是否提级。</span>`)).join("")+
+      `${withIp(x)}<br>上线 ${x.launch||"—"}（已上线 ${daysBetween(x.launch,NOW)} 天）<br><span style="color:var(--sub)">7 日观察窗口内，按“总消耗 + 累计 ROI”核心门槛判定是否提级。</span>`)).join("")+
     pendingUps.join("")+
     ((recentPending.length+D.upcoming.length)>TOP?`<div class="note" style="margin-top:6px">其余 ${(recentPending.length+D.upcoming.length)-TOP} 部从略 — 完整清单见「剧集库」筛选：7日评级 = 未评级（/）</div>`:"")||
     "近 60 天暂无未评级新剧";
   $("#wDue").innerHTML=due.slice(0,TOP).map(x=>
     card("green",`${esc(x.alias)}　${x.g7?`<span class="pill">7日</span><span class="gd ${x.g7}">${x.g7}</span>`:`<span class="gd N">/</span>`}${x.g30?` → <span class="pill">30日</span><span class="gd ${x.g30}">${x.g30}</span>`:" <span class='pill'>30日待出炉</span>"}`,
-      `${esc(x.name)}<br>上线 ${x.launch||"—"} · 30 日评级区间 ${p30(x)}（窗口结束于 ${x.until}，还剩 ${daysBetween(NOW,x.until)} 天）<br><span style="color:var(--sub)">评级结果临近，将决定后续预算去留。</span>`)).join("")+more(due.length,"30日评级 = 未出炉（/）")||"45 天内暂无到期剧目";
+      `${withIp(x)}<br>上线 ${x.launch||"—"} · 30 日评级区间 ${p30(x)}（窗口结束于 ${x.until}，还剩 ${daysBetween(NOW,x.until)} 天）<br><span style="color:var(--sub)">评级结果临近，将决定后续预算去留。</span>`)).join("")+more(due.length,"30日评级 = 未出炉（/）")||"45 天内暂无到期剧目";
 })();
 </script>
 </body>
